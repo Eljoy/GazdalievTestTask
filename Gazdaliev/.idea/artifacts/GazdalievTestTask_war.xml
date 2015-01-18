@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="GazdalievTestTask:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="GazdalievTestTask.war">
+      <element id="artifact" artifact-name="GazdalievTestTask:war exploded" />
+    </root>
+  </artifact>
+</component>

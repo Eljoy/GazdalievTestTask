@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/aop  http://www.springframework.org/schema/aop/spring-aop.xsd
+                           http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+                           http://www.springframework.org/schema/tx  http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+                           http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+                           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+
+
+    <mvc:annotation-driven />
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <context:component-scan base-package="com.sprhib" />
+    <mvc:view-controller path="/index.html" />
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    <context:property-placeholder location="classpath:application.properties"/>
+    <bean id="sessionFactory"
+           class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+          <property name="dataSource" ref="dataSource"/>
+          <property name="packagesToScan" value="com.sprhib.model"/>
+          <property name="hibernateProperties">
+              <props>
+                  <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+                  <prop key="hibernate.show_sql">true</prop>
+                  <prop key="current_session_context_class">thread</prop>
+                  <prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
+                  <prop key="hibernate.hbm2ddl.auto">create</prop>
+                  <prop key="hibernate.hbm2ddl.import_files">import.sql</prop>
+              </props>
+          </property>
+
+           </bean>
+    <bean id="transactionManager"
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+    <bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${db.driver}" />
+        <property name="url" value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
+    </bean>
+
+
+    <security:http pattern="/css/**" security="none"/>
+    <security:http pattern="/login.jsp" security="none"/>
+
+    <security:http auto-config="true" use-expressions="true">
+        <security:form-login login-page="/login.jsp"
+                login-processing-url="/login" username-parameter="username"
+                password-parameter="password" default-target-url="/home.as"
+                always-use-default-target="true" authentication-failure-url="/login.jsp?error=invalidLoginPassword" />
+        <security:intercept-url pattern="/home.as" access="isAuthenticated()" />
+        <security:intercept-url pattern="/users.as" access="isAuthenticated()" />
+        <security:logout logout-url="/logout" />
+        <security:remember-me user-service-ref="userDAOImpl" key="lesson_key"/>
+    </security:http>
+
+    <security:authentication-manager>
+        <security:authentication-provider
+            user-service-ref="userDAOImpl">
+
+            </security:authentication-provider>
+    </security:authentication-manager>
+    <bean id="roleVolter" class="org.springframework.security.access.vote.RoleVoter">
+        <property name="rolePrefix" value=""/>
+    </bean>
+
+</beans>
